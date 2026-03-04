@@ -11,7 +11,13 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfLength, UnitOfTime
+from homeassistant.const import (
+    PERCENTAGE,
+    UnitOfElectricCurrent,
+    UnitOfLength,
+    UnitOfPower,
+    UnitOfTime,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -25,9 +31,11 @@ from .coordinator import VolvoEnergyCoordinator
 class VolvoSensorEntityDescription(SensorEntityDescription):
     """Extends SensorEntityDescription with Volvo-specific fields."""
 
-    api_key: str = ""  # Key in the API 'data' response dict
+    api_key: str = ""  # Top-level key in the API response dict
 
 
+# Field names and response shapes taken directly from energy-api-specification.json
+# Each field: {"status": "OK"|"ERROR", "value": ..., "updatedAt": "...", "unit": "..."}
 SENSOR_DESCRIPTIONS: tuple[VolvoSensorEntityDescription, ...] = (
     VolvoSensorEntityDescription(
         key="battery_charge_level",
@@ -49,7 +57,7 @@ SENSOR_DESCRIPTIONS: tuple[VolvoSensorEntityDescription, ...] = (
     ),
     VolvoSensorEntityDescription(
         key="estimated_charging_time",
-        api_key="estimatedChargingTime",
+        api_key="estimatedChargingTimeToTargetBatteryChargeLevel",
         name="Estimated Charging Time",
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.MEASUREMENT,
@@ -66,9 +74,27 @@ SENSOR_DESCRIPTIONS: tuple[VolvoSensorEntityDescription, ...] = (
         icon="mdi:battery-arrow-up",
     ),
     VolvoSensorEntityDescription(
-        key="charging_connection_status",
-        api_key="chargingConnectionStatus",
-        name="Charging Connection Status",
+        key="charging_current_limit",
+        api_key="chargingCurrentLimit",
+        name="Charging Current Limit",
+        device_class=SensorDeviceClass.CURRENT,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
+        icon="mdi:current-ac",
+    ),
+    VolvoSensorEntityDescription(
+        key="charging_power",
+        api_key="chargingPower",
+        name="Charging Power",
+        device_class=SensorDeviceClass.POWER,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfPower.KILO_WATT,
+        icon="mdi:lightning-bolt",
+    ),
+    VolvoSensorEntityDescription(
+        key="charger_connection_status",
+        api_key="chargerConnectionStatus",
+        name="Charger Connection Status",
         device_class=SensorDeviceClass.ENUM,
         icon="mdi:ev-plug-type2",
         options=[
@@ -80,9 +106,9 @@ SENSOR_DESCRIPTIONS: tuple[VolvoSensorEntityDescription, ...] = (
         ],
     ),
     VolvoSensorEntityDescription(
-        key="charging_system_status",
-        api_key="chargingSystemStatus",
-        name="Charging System Status",
+        key="charging_status",
+        api_key="chargingStatus",
+        name="Charging Status",
         device_class=SensorDeviceClass.ENUM,
         icon="mdi:battery-charging",
         options=[
@@ -95,18 +121,31 @@ SENSOR_DESCRIPTIONS: tuple[VolvoSensorEntityDescription, ...] = (
         ],
     ),
     VolvoSensorEntityDescription(
-        key="charging_current_limit",
-        api_key="chargingCurrentLimit",
-        name="Charging Current Limit",
+        key="charging_type",
+        api_key="chargingType",
+        name="Charging Type",
         device_class=SensorDeviceClass.ENUM,
-        icon="mdi:current-ac",
+        icon="mdi:ev-station",
         options=[
-            "A_6",
-            "A_8",
-            "A_10",
-            "A_16",
-            "A_32",
-            "UNLOCKED",
+            "AC_SINGLE_PHASE",
+            "AC_THREE_PHASE",
+            "DC",
+            "NONE",
+            "UNSPECIFIED",
+        ],
+    ),
+    VolvoSensorEntityDescription(
+        key="charger_power_status",
+        api_key="chargerPowerStatus",
+        name="Charger Power Status",
+        device_class=SensorDeviceClass.ENUM,
+        icon="mdi:power-plug",
+        options=[
+            "CHARGING_PAUSED_POWER_AVAILABLE",
+            "CHARGING_PAUSED_SCHEDULE",
+            "CHARGING_PAUSED_VEHICLE",
+            "NO_POWER_AVAILABLE",
+            "POWER_AVAILABLE",
             "UNSPECIFIED",
         ],
     ),
@@ -153,10 +192,16 @@ class VolvoEnergySensor(CoordinatorEntity[VolvoEnergyCoordinator], SensorEntity)
 
     @property
     def _api_data(self) -> dict[str, Any] | None:
-        """Return the field dict for this sensor from the coordinator data."""
+        """Return the field dict from the coordinator data, or None if absent/error."""
         if self.coordinator.data is None:
             return None
-        return self.coordinator.data.get(self.entity_description.api_key)
+        field = self.coordinator.data.get(self.entity_description.api_key)
+        if field is None:
+            return None
+        # The API returns {"status": "ERROR", ...} when a field is unsupported
+        if field.get("status") != "OK":
+            return None
+        return field
 
     @property
     def available(self) -> bool:
@@ -168,7 +213,6 @@ class VolvoEnergySensor(CoordinatorEntity[VolvoEnergyCoordinator], SensorEntity)
         if data is None:
             return None
         raw = data.get("value")
-        # Numeric fields arrive as strings from the API; coerce where appropriate
         if self.entity_description.state_class == SensorStateClass.MEASUREMENT:
             try:
                 return float(raw)
@@ -182,8 +226,8 @@ class VolvoEnergySensor(CoordinatorEntity[VolvoEnergyCoordinator], SensorEntity)
         if data is None:
             return {}
         attrs: dict[str, Any] = {}
-        if "timestamp" in data:
-            attrs["last_updated"] = data["timestamp"]
+        if "updatedAt" in data:
+            attrs["last_updated"] = data["updatedAt"]
         if "unit" in data:
             attrs["api_unit"] = data["unit"]
         return attrs

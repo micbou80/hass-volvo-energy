@@ -48,12 +48,12 @@ These are identical in function. **Copy the Primary key** — this is your **VCC
 Before publishing, add your Home Assistant URL as an OAuth Redirect URI:
 
 ```
-https://<your-home-assistant-url>/auth/external/callback
+https://<your-home-assistant-url>/api/volvo_energy/oauth2callback
 ```
 
 Replace `<your-home-assistant-url>` with your HA instance's externally reachable URL. Examples:
-- `https://homeassistant.local:8123/auth/external/callback` (local LAN access)
-- `https://abcdef.ui.nabu.casa/auth/external/callback` (Nabu Casa / Home Assistant Cloud)
+- `https://homeassistant.local:8123/api/volvo_energy/oauth2callback` (local LAN access)
+- `https://abcdef.ui.nabu.casa/api/volvo_energy/oauth2callback` (Nabu Casa / Home Assistant Cloud)
 
 > **Tip:** Check your exact URL in Home Assistant under **Settings → System → Network → Home Assistant URL**.
 
@@ -117,7 +117,7 @@ Repeat Step 3 for each vehicle using its own VIN. Each vehicle appears as a sepa
 |---------|----------|
 | "Invalid Session" on the Developer Portal | Log out, close all portal tabs, re-open in a normal (non-incognito) browser window, and log back in. |
 | "I can't find Client ID/Secret" | They only appear on the **Publish confirmation screen** (Step 1.4). If you already published without saving them, you may need to create a new application. |
-| OAuth redirect fails / blank page | Ensure the redirect URI is registered **exactly** as `https://<ha-url>/auth/external/callback` in your app settings. |
+| OAuth redirect fails / blank page | Ensure the redirect URI is registered **exactly** as `https://<ha-url>/api/volvo_energy/oauth2callback` in your app settings. |
 | `Authentication failed` error | Double-check your Client ID, Client Secret, and VCC API Key. |
 | Sensors show as unavailable | The vehicle may be offline or sleeping. Sensors will update when data is next available. |
 | `Token refresh failed` | Your refresh token has expired (valid for 7 days without use). Re-add the integration to re-authenticate. |

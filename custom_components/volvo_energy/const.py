@@ -13,12 +13,18 @@ OAUTH_SCOPES = [
     "email",
     "conve:battery_charge_level",
     "conve:electric_range",
-    "conve:charging_connection_status",
-    "conve:charging_system_status",
-    "conve:estimated_charging_time",
+    "conve:charger_connection_status",
+    "conve:charging_status",
+    "conve:charging_type",
+    "conve:charger_power_status",
+    "conve:estimated_charging_time_to_target_battery_charge_level",
     "conve:charging_current_limit",
     "conve:target_battery_charge_level",
+    "conve:charging_power",
 ]
+
+# OAuth2 callback — our own HTTP view, avoids HA's JWT-encoded state requirement
+OAUTH_CALLBACK_PATH = "/api/volvo_energy/oauth2callback"
 
 # Config entry keys
 CONF_VCC_API_KEY = "vcc_api_key"
@@ -34,3 +40,6 @@ DEFAULT_UPDATE_INTERVAL = 300  # seconds (5 minutes)
 
 # Token refresh buffer — refresh if token expires within this many seconds
 TOKEN_REFRESH_BUFFER = 60
+
+# hass.data key used to ensure the OAuth callback view is registered only once
+CALLBACK_REGISTERED_KEY = f"{DOMAIN}_callback_registered"

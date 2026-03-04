@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Volvo Energy — Connect your vehicle",
-        "description": "Enter the credentials from your [Volvo Cars Developer Portal]({volvo_dev_portal}) app. You must also register `{ha_url}/auth/external/callback` as a Redirect URI in your Volvo app settings.",
+        "description": "Enter the credentials from your [Volvo Cars Developer Portal]({volvo_dev_portal}) app. You must also register `{ha_url}` as a Redirect URI in your Volvo app settings.",
         "data": {
           "vcc_api_key": "VCC API Key",
           "client_id": "Client ID",
