@@ -5,7 +5,7 @@
   "config_flow": true,
   "documentation": "https://github.com/micbou80/hass-volvo-energy",
   "requirements": [],
-  "version": "1.0.0",
+  "version": "0.1.0",
   "homeassistant": "2024.1.0",
   "integration_type": "device",
   "iot_class": "cloud_polling"
