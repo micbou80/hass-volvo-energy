@@ -12,9 +12,12 @@ A [Home Assistant](https://www.home-assistant.io/) custom integration that expos
 | Electric Range | Estimated remaining range | km |
 | Estimated Charging Time | Minutes until fully charged | min |
 | Target Battery Charge Level | Configured charge target | % |
-| Charging Connection Status | e.g. `CONNECTED_AC`, `DISCONNECTED` | — |
-| Charging System Status | e.g. `CHARGING`, `IDLE`, `DONE` | — |
-| Charging Current Limit | e.g. `A_16`, `A_32` | — |
+| Charger Connection Status | e.g. `connected`, `disconnected`, `fault` | — |
+| Charging Status | e.g. `charging`, `idle`, `done` | — |
+| Charging Type | e.g. `ac`, `dc`, `none` | — |
+| Charging Current Limit | Current limit in amperes | A |
+| Charging Power | Current charging power output | W |
+| Charger Power Status | e.g. `providing_power`, `no_power_available` | — |
 
 All sensors are grouped under a single device named **Volvo `<VIN>`** in Home Assistant.
 
@@ -48,12 +51,12 @@ These are identical in function. **Copy the Primary key** — this is your **VCC
 Before publishing, add your Home Assistant URL as an OAuth Redirect URI:
 
 ```
-https://<your-home-assistant-url>/api/volvo_energy/oauth2callback
+https://<your-home-assistant-url>/auth/external/callback
 ```
 
 Replace `<your-home-assistant-url>` with your HA instance's externally reachable URL. Examples:
-- `https://homeassistant.local:8123/api/volvo_energy/oauth2callback` (local LAN access)
-- `https://abcdef.ui.nabu.casa/api/volvo_energy/oauth2callback` (Nabu Casa / Home Assistant Cloud)
+- `https://homeassistant.local:8123/auth/external/callback` (local LAN access)
+- `https://abcdef.ui.nabu.casa/auth/external/callback` (Nabu Casa / Home Assistant Cloud)
 
 > **Tip:** Check your exact URL in Home Assistant under **Settings → System → Network → Home Assistant URL**.
 
@@ -90,24 +93,33 @@ Replace `<your-home-assistant-url>` with your HA instance's externally reachable
 
 ## Step 3 — Configure in Home Assistant
 
+The integration uses a three-step configuration flow:
+
+### Step 3a — Application Credentials (HA-managed)
+
 1. Go to **Settings → Devices & Services → Add Integration**.
 2. Search for **Volvo Energy**.
-3. Fill in the form:
-
-   | Field | Where to find it |
-   |-------|-----------------|
-   | **VCC API Key** | Primary key on the app details page (Step 1.2) |
-   | **Client ID** | From the Publish confirmation screen (Step 1.4) |
-   | **Client Secret** | From the Publish confirmation screen (Step 1.4) |
-   | **Vehicle VIN** | Your car's 17-character VIN (see door frame, dashboard, or your Volvo app) |
-
+3. Home Assistant will show an **Application Credentials** dialog asking for:
+   - **Client ID** — from the Publish confirmation screen (Step 1.4)
+   - **Client Secret** — from the Publish confirmation screen (Step 1.4)
 4. Click **Submit**. You will be redirected to the Volvo Cars login page.
-5. Sign in with the **Volvo Cars account that owns the vehicle**.
-6. After successful authentication, Home Assistant will create the integration and all 7 sensors will appear.
+5. Sign in with the **Volvo Cars account that owns the vehicle**. After authentication, you proceed to Step 3b.
+
+### Step 3b — VCC API Key
+
+6. Enter your **VCC API Key** (the Primary key from Step 1.2).
+7. Home Assistant validates the key by fetching your vehicle list. Click **Submit**.
+
+### Step 3c — Vehicle Selection
+
+8. **If you have one car**: It will be auto-selected and the integration will be created immediately.
+9. **If you have multiple cars**: A dropdown list will appear. Select the vehicle you want to monitor and click **Submit**.
+
+After successful completion, all 10 sensors will appear under a device named **Volvo `<VIN>`**.
 
 ### Adding multiple vehicles
 
-Repeat Step 3 for each vehicle using its own VIN. Each vehicle appears as a separate device in Home Assistant.
+Repeat Step 3 for each vehicle. Each vehicle appears as a separate device in Home Assistant.
 
 ---
 
@@ -117,11 +129,12 @@ Repeat Step 3 for each vehicle using its own VIN. Each vehicle appears as a sepa
 |---------|----------|
 | "Invalid Session" on the Developer Portal | Log out, close all portal tabs, re-open in a normal (non-incognito) browser window, and log back in. |
 | "I can't find Client ID/Secret" | They only appear on the **Publish confirmation screen** (Step 1.4). If you already published without saving them, you may need to create a new application. |
-| OAuth redirect fails / blank page | Ensure the redirect URI is registered **exactly** as `https://<ha-url>/api/volvo_energy/oauth2callback` in your app settings. |
-| `Authentication failed` error | Double-check your Client ID, Client Secret, and VCC API Key. |
+| No Application Credentials dialog appears | Ensure you have set up Application Credentials in HA first. Go to **Settings → Devices & Services → Application Credentials → Create** and fill in Client ID and Client Secret from Step 1.4. |
+| `Cannot load vehicles` error in config flow | Double-check your **VCC API Key** (from Step 1.2). This error means the API key is invalid or the API request failed. |
+| `Authentication failed` error | The VCC API Key is incorrect or the integration lost access. Delete and re-add the integration. |
 | Sensors show as unavailable | The vehicle may be offline or sleeping. Sensors will update when data is next available. |
-| `Token refresh failed` | Your refresh token has expired (valid for 7 days without use). Re-add the integration to re-authenticate. |
-| Rate limit errors | The 5-minute polling interval uses ~288 calls/day, well within the 10,000/day limit. |
+| Token refresh failed during operation | Volvo may have revoked your authorization. Re-add the integration to re-authenticate with your Volvo Cars account. |
+| Rate limit errors | The 5-minute polling interval uses ~288 calls/day, well within the 10,000/day limit. If you have multiple vehicles on the same API key, total usage may approach the limit. |
 
 ---
 
