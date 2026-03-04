@@ -11,10 +11,10 @@
           "vin": "Vehicle VIN"
         },
         "data_description": {
-          "vcc_api_key": "The primary API key shown on your app's details page in the Volvo Cars Developer Portal.",
-          "client_id": "Your OAuth 2.0 Client ID from the Volvo Cars Developer Portal.",
-          "client_secret": "Your OAuth 2.0 Client Secret from the Volvo Cars Developer Portal.",
-          "vin": "The 17-character Vehicle Identification Number of your Volvo."
+          "vcc_api_key": "The Primary key shown on your app's details page (also labelled 'VSS API key' or 'VCC API key Primary'). Either Primary or Secondary works.",
+          "client_id": "Only available after clicking Publish on your app. Shown on the Publish confirmation screen.",
+          "client_secret": "Only available after clicking Publish on your app. Save it from the confirmation screen — it may only be shown once.",
+          "vin": "The 17-character Vehicle Identification Number (found on the door frame, dashboard, or in your Volvo Cars app)."
         }
       },
       "oauth": {

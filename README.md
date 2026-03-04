@@ -22,30 +22,56 @@ Data is polled every **5 minutes** (within the API's rate limits of 10,000 calls
 
 ---
 
-## Prerequisites
+## Step 1 — Set up the Volvo Cars Developer Portal
 
-Before installing, you need a **Volvo Cars Developer Portal** account and an application set up there:
+Before installing the integration, you need to create and **publish** an application on the Volvo Cars Developer Portal. This is a one-time setup that gives you the credentials the integration needs.
 
-1. Go to [developer.volvocars.com](https://developer.volvocars.com/) and sign in (or create an account).
+### 1.1 Create an account and application
+
+1. Go to [developer.volvocars.com](https://developer.volvocars.com/) and sign in (or create an account). Use a regular browser — avoid private/incognito mode as it can cause "Invalid Session" errors.
 2. Create a new application.
-3. On the application page, subscribe to the **Energy API v2**.
-4. Note down:
-   - **VCC API Key** (shown on the application details page)
-   - **Client ID**
-   - **Client Secret**
-5. Add the following as an **OAuth 2.0 Redirect URI** in your application settings:
+3. Subscribe the application to the **Energy API v2**.
 
-   ```
-   https://<your-home-assistant-url>/auth/external/callback
-   ```
+### 1.2 Note your VCC API Key
 
-   Replace `<your-home-assistant-url>` with your HA instance's externally reachable URL (e.g. `https://homeassistant.local:8123` for local setups or your Nabu Casa URL).
+On the application details page (before publishing), you will see:
 
-   > **Tip:** If you are unsure of your HA URL, check **Settings → System → Network** in Home Assistant.
+- **Primary key** — also labelled "VSS API key" or "VCC API key Primary"
+- **Secondary key** — the backup/rotation copy
+
+These are identical in function. **Copy the Primary key** — this is your **VCC API Key** for the integration.
+
+> The Primary and Secondary keys are just two copies of the same credential for rotation purposes. You can use either one, but Primary is recommended.
+
+### 1.3 Add the OAuth Redirect URI
+
+Before publishing, add your Home Assistant URL as an OAuth Redirect URI:
+
+```
+https://<your-home-assistant-url>/auth/external/callback
+```
+
+Replace `<your-home-assistant-url>` with your HA instance's externally reachable URL. Examples:
+- `https://homeassistant.local:8123/auth/external/callback` (local LAN access)
+- `https://abcdef.ui.nabu.casa/auth/external/callback` (Nabu Casa / Home Assistant Cloud)
+
+> **Tip:** Check your exact URL in Home Assistant under **Settings → System → Network → Home Assistant URL**.
+
+### 1.4 Publish the application to get Client ID and Client Secret
+
+> **This step is required.** Client ID and Client Secret are only generated when you publish.
+
+1. Make sure all **Scopes** are selected — expand every section to see them all.
+2. Click **Publish**.
+3. Fill in the required fields in the form that appears.
+4. On the confirmation screen, you will see your **Client ID** and **Client Secret**.
+5. **Copy both immediately** — the Client Secret may only be shown once.
+
+> If you see an "Invalid Session" error during this step, log out of the portal and log back in using a normal browser window (not private/incognito), then try again. This is a known portal issue.
 
 ---
 
-## Installation
+## Step 2 — Install the Integration
 
 ### Via HACS (recommended)
 
@@ -62,22 +88,26 @@ Before installing, you need a **Volvo Cars Developer Portal** account and an app
 
 ---
 
-## Configuration
+## Step 3 — Configure in Home Assistant
 
 1. Go to **Settings → Devices & Services → Add Integration**.
 2. Search for **Volvo Energy**.
 3. Fill in the form:
-   - **VCC API Key** — from the Volvo Developer Portal
-   - **Client ID** — from the Volvo Developer Portal
-   - **Client Secret** — from the Volvo Developer Portal
-   - **Vehicle VIN** — the 17-character VIN of your vehicle
+
+   | Field | Where to find it |
+   |-------|-----------------|
+   | **VCC API Key** | Primary key on the app details page (Step 1.2) |
+   | **Client ID** | From the Publish confirmation screen (Step 1.4) |
+   | **Client Secret** | From the Publish confirmation screen (Step 1.4) |
+   | **Vehicle VIN** | Your car's 17-character VIN (see door frame, dashboard, or your Volvo app) |
+
 4. Click **Submit**. You will be redirected to the Volvo Cars login page.
 5. Sign in with the **Volvo Cars account that owns the vehicle**.
-6. After successful authentication, Home Assistant will create the integration and all sensors will appear within a few seconds.
+6. After successful authentication, Home Assistant will create the integration and all 7 sensors will appear.
 
 ### Adding multiple vehicles
 
-Repeat the configuration steps above for each vehicle, using its own VIN. Each vehicle will appear as a separate device in Home Assistant.
+Repeat Step 3 for each vehicle using its own VIN. Each vehicle appears as a separate device in Home Assistant.
 
 ---
 
@@ -85,11 +115,13 @@ Repeat the configuration steps above for each vehicle, using its own VIN. Each v
 
 | Problem | Solution |
 |---------|----------|
-| OAuth redirect fails / blank page | Ensure the redirect URI `https://<ha-url>/auth/external/callback` is registered exactly in the Volvo Developer Portal. |
+| "Invalid Session" on the Developer Portal | Log out, close all portal tabs, re-open in a normal (non-incognito) browser window, and log back in. |
+| "I can't find Client ID/Secret" | They only appear on the **Publish confirmation screen** (Step 1.4). If you already published without saving them, you may need to create a new application. |
+| OAuth redirect fails / blank page | Ensure the redirect URI is registered **exactly** as `https://<ha-url>/auth/external/callback` in your app settings. |
 | `Authentication failed` error | Double-check your Client ID, Client Secret, and VCC API Key. |
-| Sensors show as unavailable | The vehicle may be offline or sleeping. The sensors will update when data is next available. |
-| `Token refresh failed` | Your refresh token has expired (valid for 7 days without a refresh). Re-add the integration to re-authenticate. |
-| Rate limit errors | The default 5-minute polling interval is well within the 10,000 calls/day limit. If you have multiple vehicles, this still applies comfortably. |
+| Sensors show as unavailable | The vehicle may be offline or sleeping. Sensors will update when data is next available. |
+| `Token refresh failed` | Your refresh token has expired (valid for 7 days without use). Re-add the integration to re-authenticate. |
+| Rate limit errors | The 5-minute polling interval uses ~288 calls/day, well within the 10,000/day limit. |
 
 ---
 
