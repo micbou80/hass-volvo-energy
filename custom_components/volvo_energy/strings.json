@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Volvo Energy — Connect your vehicle",
+        "description": "Enter the credentials from your [Volvo Cars Developer Portal]({volvo_dev_portal}) app. You must also register `{ha_url}/auth/external/callback` as a Redirect URI in your Volvo app settings.",
+        "data": {
+          "vcc_api_key": "VCC API Key",
+          "client_id": "Client ID",
+          "client_secret": "Client Secret",
+          "vin": "Vehicle VIN"
+        },
+        "data_description": {
+          "vcc_api_key": "The primary API key shown on your app's details page in the Volvo Cars Developer Portal.",
+          "client_id": "Your OAuth 2.0 Client ID from the Volvo Cars Developer Portal.",
+          "client_secret": "Your OAuth 2.0 Client Secret from the Volvo Cars Developer Portal.",
+          "vin": "The 17-character Vehicle Identification Number of your Volvo."
+        }
+      },
+      "oauth": {
+        "title": "Authenticate with Volvo Cars",
+        "description": "Click the link below to sign in with your Volvo Cars account and authorise access to your vehicle's energy data."
+      }
+    },
+    "error": {
+      "invalid_vin": "The VIN must be exactly 17 alphanumeric characters (I, O, and Q are not allowed).",
+      "auth_failed": "Authentication failed. Check your Client ID, Client Secret, and VCC API Key, then try again.",
+      "oauth_error": "An error occurred during the Volvo Cars OAuth flow. Please try again.",
+      "cannot_connect": "Unable to connect to the Volvo Cars API. Check your network connection and try again."
+    },
+    "abort": {
+      "already_configured": "This vehicle (VIN) is already configured.",
+      "oauth_error": "OAuth authorisation was cancelled or failed.",
+      "auth_failed": "Token exchange with Volvo Cars failed."
+    }
+  }
+}
