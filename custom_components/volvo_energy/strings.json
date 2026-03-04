@@ -1,37 +1,36 @@
 {
   "config": {
     "step": {
-      "user": {
-        "title": "Volvo Energy — Connect your vehicle",
-        "description": "Enter the credentials from your [Volvo Cars Developer Portal]({volvo_dev_portal}) app. You must also register `{ha_url}` as a Redirect URI in your Volvo app settings.",
+      "api_key": {
+        "title": "Volvo Energy — VCC API Key",
+        "description": "Enter the Primary API key from your [Volvo Cars Developer Portal]({volvo_dev_portal}) app.",
         "data": {
-          "vcc_api_key": "VCC API Key",
-          "client_id": "Client ID",
-          "client_secret": "Client Secret",
-          "vin": "Vehicle VIN"
+          "api_key": "VCC API Key"
         },
         "data_description": {
-          "vcc_api_key": "The Primary key shown on your app's details page (also labelled 'VSS API key' or 'VCC API key Primary'). Either Primary or Secondary works.",
-          "client_id": "Only available after clicking Publish on your app. Shown on the Publish confirmation screen.",
-          "client_secret": "Only available after clicking Publish on your app. Save it from the confirmation screen — it may only be shown once.",
-          "vin": "The 17-character Vehicle Identification Number (found on the door frame, dashboard, or in your Volvo Cars app)."
+          "api_key": "The Primary key shown on your app's details page (labelled 'VSS API key Primary' or 'VCC API key'). Either Primary or Secondary works."
         }
       },
-      "oauth": {
-        "title": "Authenticate with Volvo Cars",
-        "description": "Click the link below to sign in with your Volvo Cars account and authorise access to your vehicle's energy data."
+      "vin": {
+        "title": "Volvo Energy — Select Vehicle",
+        "description": "Select the vehicle you want to monitor.",
+        "data": {
+          "vin": "Vehicle"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate Volvo Energy",
+        "description": "Re-authenticate {name} with your Volvo Cars account."
       }
     },
     "error": {
-      "invalid_vin": "The VIN must be exactly 17 alphanumeric characters (I, O, and Q are not allowed).",
-      "auth_failed": "Authentication failed. Check your Client ID, Client Secret, and VCC API Key, then try again.",
-      "oauth_error": "An error occurred during the Volvo Cars OAuth flow. Please try again.",
-      "cannot_connect": "Unable to connect to the Volvo Cars API. Check your network connection and try again."
+      "cannot_load_vehicles": "Unable to retrieve vehicles. Check your VCC API Key and try again.",
+      "no_vehicles": "No vehicles found on this account."
     },
     "abort": {
       "already_configured": "This vehicle (VIN) is already configured.",
       "oauth_error": "OAuth authorisation was cancelled or failed.",
-      "auth_failed": "Token exchange with Volvo Cars failed."
+      "oauth_failed": "Failed to authenticate with Volvo Cars."
     }
   }
 }
